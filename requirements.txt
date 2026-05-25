@@ -1,0 +1,15 @@
+torch
+torchvision
+pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+streamlit
+opencv-python
+pillow
+plotly
+joblib
+fastapi
+uvicorn
+mlflow
