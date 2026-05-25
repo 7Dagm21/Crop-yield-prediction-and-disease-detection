@@ -1,0 +1,26 @@
+*
+
+!.dockerignore
+!requirements.txt
+!src/
+!src/**
+!main.py
+
+.venv/
+.git/
+outputs/
+models/
+data/
+notebooks/
+deployment/
+plots/
+ethiopian cofee leaf dataset/
+Sorghum Disease Image Dataset/
+house and salary prediction/
+house prediction/
+pandas excercise/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.env

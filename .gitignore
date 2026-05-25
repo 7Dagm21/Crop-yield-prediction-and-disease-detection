@@ -1,0 +1,30 @@
+/.venv/
+/data/
+/ethiopian cofee leaf dataset/
+/Sorghum Disease Image Dataset/
+/models/
+/notebooks/
+/outputs/
+/run_coffee_debug.txt
+/run_coffee_log.txt
+/run_coffee_output.txt
+/run_coffee_tiny_log.txt
+/run_coffee_tiny_log2.txt
+/models/*.pth
+/models/exports/*.onnx
+/models/exports/*.pt
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+.vscode/
+env/
+venv/
+mlruns/
+*.egg-info/
+.env
+.pytest_cache/
+/.idea/
+ 
