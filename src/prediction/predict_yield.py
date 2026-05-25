@@ -8,14 +8,35 @@ import pandas as pd
 import torch
 import joblib
 
-from ..config import MODELS_DIR, YIELD_FEATURE_COLUMNS, YIELD_MODEL_PATH
+from ..config import MODELS_DIR, YIELD_FEATURE_COLUMNS, YIELD_MODEL_PATH, YIELD_MODEL_URL, YIELD_REGRESSION_MODEL_URL
+import requests
+import tempfile
+import shutil
+import os
 from ..preprocessing.clean_yield_data import load_yield_data
 from ..training.train_yield_model import YieldRegressor, train_yield_model
 
 
 def load_yield_bundle(model_path: Path = YIELD_MODEL_PATH) -> dict[str, Any]:
     if not model_path.exists():
-        train_yield_model()
+        # Try runtime download from configured release URLs before attempting to train locally
+        download_url = YIELD_REGRESSION_MODEL_URL or YIELD_MODEL_URL
+        if download_url:
+            try:
+                model_path.parent.mkdir(parents=True, exist_ok=True)
+                tmpfd, tmpname = tempfile.mkstemp(suffix=".pth")
+                with requests.get(download_url, stream=True, timeout=60) as r:
+                    r.raise_for_status()
+                    with open(tmpname, "wb") as f:
+                        shutil.copyfileobj(r.raw, f)
+                os.close(tmpfd)
+                shutil.move(tmpname, str(model_path))
+            except Exception:
+                # If download fails, fall back to training (may fail in cloud)
+                train_yield_model()
+        else:
+            train_yield_model()
+
     bundle = torch.load(model_path, map_location="cpu", weights_only=False)
     # Try loading separate preprocessor first
     preprocessor_path = MODELS_DIR / "preprocessor.pkl"
