@@ -1,0 +1,4 @@
+ethiopian[[:space:]]cofee[[:space:]]leaf[[:space:]]dataset/** filter=lfs diff=lfs merge=lfs -text
+Sorghum[[:space:]]Disease[[:space:]]Image[[:space:]]Dataset/** filter=lfs diff=lfs merge=lfs -text
+data/** filter=lfs diff=lfs merge=lfs -text
+models/** filter=lfs diff=lfs merge=lfs -text
