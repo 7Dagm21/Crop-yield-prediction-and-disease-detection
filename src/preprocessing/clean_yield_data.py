@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from itertools import cycle
 
+from pathlib import Path
 import pandas as pd
+import requests
+import tempfile
+import shutil
+import os
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
@@ -42,11 +47,29 @@ def _build_demo_yield_data() -> pd.DataFrame:
 
 
 def load_yield_data(csv_path=None) -> pd.DataFrame:
-    csv_file = csv_path or CROP_YIELD_DATA_PATH
-    if csv_file is not None and pd.io.common.file_exists(csv_file):
-        data_frame = pd.read_csv(csv_file)
-    else:
-        data_frame = _build_demo_yield_data()
+    csv_file = Path(csv_path or CROP_YIELD_DATA_PATH)
+
+    # If CSV missing, try downloading from configured public URL (set in config)
+    from ..config import CROP_YIELD_DATA_URL
+
+    if not pd.io.common.file_exists(csv_file):
+        if CROP_YIELD_DATA_URL:
+            try:
+                csv_file.parent.mkdir(parents=True, exist_ok=True)
+                tmpfd, tmpname = tempfile.mkstemp(suffix=".csv")
+                with requests.get(CROP_YIELD_DATA_URL, stream=True, timeout=60) as r:
+                    r.raise_for_status()
+                    with open(tmpname, "wb") as f:
+                        shutil.copyfileobj(r.raw, f)
+                os.close(tmpfd)
+                shutil.move(tmpname, str(csv_file))
+            except Exception:
+                # fall back to demo data if download fails
+                return _build_demo_yield_data()
+        else:
+            return _build_demo_yield_data()
+
+    data_frame = pd.read_csv(csv_file)
     required_columns = list(YIELD_FEATURE_COLUMNS) + [YIELD_TARGET_COLUMN]
     missing_columns = [column for column in required_columns if column not in data_frame.columns]
     # If missing optional climate/region columns, fill with sensible defaults

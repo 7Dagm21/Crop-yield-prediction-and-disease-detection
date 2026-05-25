@@ -9,6 +9,7 @@ REPORTS_DIR = OUTPUTS_DIR / "reports"
 PREDICTIONS_DIR = OUTPUTS_DIR / "predictions"
 
 CROP_YIELD_DATA_PATH = DATA_DIR / "crop_yield" / "faostat_ethiopia_yield.csv"
+CROP_YIELD_DATA_URL = ""  # Public URL to download the yield CSV at runtime (optional)
 YIELD_MODEL_PATH = MODELS_DIR / "yield_regression_model.pth"
 DISEASE_MODEL_PATH = MODELS_DIR / "resnet18_disease_model.pth"
 DISEASE_MODELS_DIR = MODELS_DIR / "disease"
