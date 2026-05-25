@@ -12,6 +12,7 @@ CROP_YIELD_DATA_PATH = DATA_DIR / "crop_yield" / "faostat_ethiopia_yield.csv"
 YIELD_MODEL_PATH = MODELS_DIR / "yield_regression_model.pth"
 DISEASE_MODEL_PATH = MODELS_DIR / "resnet18_disease_model.pth"
 DISEASE_MODELS_DIR = MODELS_DIR / "disease"
+DISEASE_MODEL_URL = ""  # Set to a public URL to enable runtime download (leave empty to disable)
 YIELD_METRICS_PATH = REPORTS_DIR / "yield_metrics.json"
 DISEASE_METRICS_PATH = REPORTS_DIR / "disease_metrics.json"
 YIELD_GRAPH_PATH = GRAPHS_DIR / "yield_training_curves.png"

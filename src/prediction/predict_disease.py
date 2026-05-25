@@ -9,7 +9,11 @@ import torch.nn as nn
 from PIL import Image
 from torchvision import models
 
-from ..config import DISEASE_CLASS_NAMES, DISEASE_MODEL_PATH, get_disease_model_path, normalize_crop_name
+from ..config import DISEASE_CLASS_NAMES, DISEASE_MODEL_PATH, DISEASE_MODEL_URL, get_disease_model_path, normalize_crop_name
+import requests
+import tempfile
+import shutil
+import os
 from ..preprocessing.image_preprocessing import build_image_transforms
 
 
@@ -34,13 +38,42 @@ def predict_disease(image_path: str | Path | BufferedIOBase, crop_type: str, mod
         model_path = get_disease_model_path(crop_type)
 
     if not model_path.exists():
+        # try a default global model path
         if DISEASE_MODEL_PATH.exists():
             model_path = DISEASE_MODEL_PATH
             fallback_used = True
+        # try runtime download if a public URL is configured
+        elif DISEASE_MODEL_URL:
+            try:
+                model_path.parent.mkdir(parents=True, exist_ok=True)
+                tmpfd, tmpname = tempfile.mkstemp(suffix=".pth")
+                with requests.get(DISEASE_MODEL_URL, stream=True, timeout=60) as r:
+                    r.raise_for_status()
+                    with open(tmpname, "wb") as f:
+                        shutil.copyfileobj(r.raw, f)
+                os.close(tmpfd)
+                shutil.move(tmpname, str(DISEASE_MODEL_PATH))
+                model_path = DISEASE_MODEL_PATH
+            except Exception as e:
+                return {
+                    "disease": "Model unavailable",
+                    "confidence": 0.0,
+                    "probabilities": {},
+                    "method": "download_failed",
+                    "model_source": "remote_attempt_failed",
+                    "model_path": str(model_path),
+                    "message": f"Failed to download model from configured URL: {e}",
+                }
         else:
-            raise FileNotFoundError(
-                f"No trained disease model found for {crop_type}. Train a crop-specific disease model and try again."
-            )
+            return {
+                "disease": "Model unavailable",
+                "confidence": 0.0,
+                "probabilities": {},
+                "method": "demo_fallback",
+                "model_source": "missing",
+                "model_path": str(model_path),
+                "message": f"No trained disease model found for {crop_type}. Deploy an exported model bundle to enable inference.",
+            }
 
     bundle = torch.load(model_path, map_location="cpu")
     class_names = bundle.get("class_names", DISEASE_CLASS_NAMES)
